@@ -28,7 +28,7 @@ type DrugDesc struct {
 
 type DrugReportDesc struct {
 	Guidance       string `json:"guidance"`
-	Interpretation string `json:"interpretation"`
+	Interpretation string `json:"interpretation"` // 解读
 }
 
 type DrugReferenceDesc struct {
@@ -39,34 +39,35 @@ type DrugReferenceDesc struct {
 
 type DrugReferences struct {
 	Id    string `json:"id"`
-	Title string `json:"title"`
+	Title string `json:"title"` // 参考文献
 }
 
 type DrugGenomicsDesc struct {
-	Mutation []DrugMutation `json:"mutation"`
+	Mutation    []DrugMutation          `json:"mutation"`
+	MutationMap map[string]DrugMutation `json:"-"`
 }
 
 type DrugMutation struct {
 	Locus []DrugLocus `json:"locus"`
-	Gene  string      `json:"gene"`
+	Gene  string      `json:"gene"` // 基因
 	Rank  int         `json:"rank"`
 	Desc  string      `json:"desc"`
 }
 
 type DrugLocus struct {
-	SnpRs       string `json:"snpRs"`
-	Advice      string `json:"advice"`
+	SnpRs       string `json:"snpRs"`  // 检测位点
+	Advice      string `json:"advice"` // 建议
 	Rs          string `json:"rs"`
 	Metabolizer string `json:"metabolizer"`
-	GeneType    string `json:"genetype"`
+	GeneType    string `json:"genetype"` // 基因型
 }
 
 type DrugMedicineDesc struct {
 	Name  DrugName `json:"name"`
-	Brief string   `json:"brief"`
+	Brief string   `json:"brief"` // 背景
 }
 
 type DrugName struct {
 	En string `json:"en"`
-	Cn string `json:"cn"`
+	Cn string `json:"cn"` // 药物名称
 }
