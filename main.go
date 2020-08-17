@@ -42,10 +42,14 @@ func main() {
 	var outputF = osUtil.Create(*output)
 	defer simpleUtil.DeferClose(outputF)
 
-	// 读取药物结果
 	var excel = simpleUtil.HandleError(excelize.OpenFile(*input)).(*excelize.File)
+	// 读取样品信息
+	var sampleInfo = simpleUtil.HandleError(excel.GetRows("样本信息")).([][]string)
+	var sampleInfoMap = simpleUtil.Slice2MapMapArray(sampleInfo, "样品编号")
+	// 读取药物结果
 	var results = simpleUtil.HandleError(excel.GetRows("检测结果")).([][]string)
 	var db = simpleUtil.Slice2MapArray(results)
+
 	var info = make(map[string]map[string]*DrugInfo)
 	for _, item := range db {
 		var sampleID = item["样本编号"]
@@ -58,6 +62,15 @@ func main() {
 		var drugInfo, ok2 = drugs[drugName]
 		if !ok2 { // 药物初值
 			drugInfo = &DrugInfo{
+				Available:   0, // 不知道是什么
+				ProductCode: sampleInfoMap[sampleID]["产品编号"],
+				IsPositive:  "不知道是什么",
+				Gender:      sampleInfoMap[sampleID]["性别"],
+				PhoneNum:    sampleInfoMap[sampleID]["电话"],
+				Birthdate:   sampleInfoMap[sampleID]["出生日期"],
+				ProductName: sampleInfoMap[sampleID]["产品名称"],
+				SampleType:  sampleInfoMap[sampleID]["样品类型"],
+				SampleNum:   sampleID,
 				MedicineCate: DrugMedicineCate{
 					Id:   item["不知道是什么"],
 					Name: item["药物分类"],
