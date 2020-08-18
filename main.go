@@ -87,7 +87,7 @@ func main() {
 		var drugInfo, ok2 = drugs[drugName]
 		if !ok2 { // 药物初值
 			drugInfo = &DrugInfo{
-				Available:   1, // 默认1
+				Available:   1, // 默认设置为 1
 				ProductCode: sampleInfoMap[sampleID]["产品编号"],
 				IsPositive:  strconv.FormatBool(item["用药建议"] == "常规用药"),
 				Gender:      sampleInfoMap[sampleID]["性别"],
@@ -97,7 +97,7 @@ func main() {
 				SampleType:  sampleInfoMap[sampleID]["样品类型"],
 				SampleNum:   sampleID,
 				MedicineCate: DrugMedicineCate{
-					Id:   "不知道是什么",
+					Id:   "", // 默认设置为空
 					Name: item["药物分类"],
 				},
 				Desc: DrugDesc{
@@ -106,8 +106,8 @@ func main() {
 						Interpretation: item["结果说明"],
 					},
 					ReferenceDesc: DrugReferenceDesc{
-						Reactions:     "不知道是什么",
-						RelateDisease: "不知道是什么",
+						Reactions:     "", // 默认设置为空
+						RelateDisease: "", // 默认设置为空
 						References:    str2DrugReferencesArray(backgroundDb[drugName]["中文版报告用到的文献"]),
 					},
 					GenomicsDesc: DrugGenomicsDesc{
@@ -130,8 +130,8 @@ func main() {
 			drugMutation = DrugMutation{
 				Locus: []DrugLocus{},
 				Gene:  gene,
-				Rank:  0, // 不知道是什么，默认设置为0
-				Desc:  "不知道是什么",
+				Rank:  1,  // 默认设置为 1
+				Desc:  "", // 默认设置为空
 			}
 		}
 		drugMutation.Locus = append(
@@ -139,8 +139,8 @@ func main() {
 			DrugLocus{
 				SnpRs:       item["检测位点"],
 				Advice:      item["分条用药建议"],
-				Rs:          "不知道为什么是空的",
-				Metabolizer: "不知道是什么",
+				Rs:          "", // 默认设置为空
+				Metabolizer: "", // 默认设置为空
 				GeneType:    item["检测结果"],
 			},
 		)
@@ -233,12 +233,14 @@ func main() {
 }
 
 func str2DrugReferencesArray(str string) (references []DrugReferences) {
-	for i, ref := range strings.Split(str, "\n") {
+	var i = 1
+	for _, ref := range strings.Split(str, "\n") {
 		if ref != "" {
 			var reference = DrugReferences{
-				Id:    strconv.Itoa(i + 1),
+				Id:    strconv.Itoa(i),
 				Title: ref,
 			}
+			i++
 			references = append(references, reference)
 		}
 	}
