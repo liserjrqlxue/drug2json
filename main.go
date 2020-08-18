@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
@@ -16,6 +18,13 @@ import (
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 )
 
+// os
+var (
+	ex, _  = os.Executable()
+	exPath = filepath.Dir(ex)
+)
+
+// flag
 var (
 	input = flag.String(
 		"input",
@@ -27,6 +36,16 @@ var (
 		"",
 		"output json file -prefix.sampleID.txt",
 	)
+	bgFile = flag.String(
+		"background",
+		filepath.Join(exPath, "background-child-V1.1-xcj20181206.xlsx"),
+		"background database",
+	)
+	bgSheetName = flag.String(
+		"backgroundSheet",
+		"Sheet2",
+		"background database sheet name",
+	)
 )
 
 func main() {
@@ -37,6 +56,16 @@ func main() {
 		log.Print("-input is required!")
 		os.Exit(1)
 	}
+
+	var backgroundDb = simpleUtil.Slice2MapMapArray(
+		simpleUtil.HandleError(
+			simpleUtil.HandleError(
+				excelize.OpenFile(*bgFile),
+			).(*excelize.File).
+				GetRows(*bgSheetName),
+		).([][]string),
+		"药物中文名称",
+	)
 
 	var excel = simpleUtil.HandleError(excelize.OpenFile(*input)).(*excelize.File)
 	// 读取样品信息
@@ -58,7 +87,7 @@ func main() {
 		var drugInfo, ok2 = drugs[drugName]
 		if !ok2 { // 药物初值
 			drugInfo = &DrugInfo{
-				Available:   0, // 不知道是什么
+				Available:   1, // 默认1
 				ProductCode: sampleInfoMap[sampleID]["产品编号"],
 				IsPositive:  strconv.FormatBool(item["用药建议"] == "常规用药"),
 				Gender:      sampleInfoMap[sampleID]["性别"],
@@ -79,12 +108,7 @@ func main() {
 					ReferenceDesc: DrugReferenceDesc{
 						Reactions:     "不知道是什么",
 						RelateDisease: "不知道是什么",
-						References: []DrugReferences{
-							{
-								Id:    "0",
-								Title: "[0]数据库没有参考文献",
-							},
-						},
+						References:    str2DrugReferencesArray(backgroundDb[drugName]["中文版报告用到的文献"]),
 					},
 					GenomicsDesc: DrugGenomicsDesc{
 						MutationMap: map[string]DrugMutation{},
@@ -95,7 +119,7 @@ func main() {
 							Cn: item["药物名称"],
 							En: item["英文名"],
 						},
-						Brief: "药物背景数据库待提供",
+						Brief: backgroundDb[drugName]["药物知识-中文"],
 					},
 				},
 			}
@@ -206,4 +230,17 @@ func main() {
 		fmt.Println("----------------------------------------------------------------------------------------")
 		simpleUtil.DeferClose(outputF)
 	}
+}
+
+func str2DrugReferencesArray(str string) (references []DrugReferences) {
+	for i, ref := range strings.Split(str, "\n") {
+		if ref != "" {
+			var reference = DrugReferences{
+				Id:    strconv.Itoa(i + 1),
+				Title: ref,
+			}
+			references = append(references, reference)
+		}
+	}
+	return
 }
