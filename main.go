@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
@@ -64,7 +65,7 @@ func main() {
 			drugInfo = &DrugInfo{
 				Available:   0, // 不知道是什么
 				ProductCode: sampleInfoMap[sampleID]["产品编号"],
-				IsPositive:  "不知道是什么",
+				IsPositive:  strconv.FormatBool(item["用药建议"] == "常规用药"),
 				Gender:      sampleInfoMap[sampleID]["性别"],
 				PhoneNum:    sampleInfoMap[sampleID]["电话"],
 				Birthdate:   sampleInfoMap[sampleID]["出生日期"],
@@ -72,7 +73,7 @@ func main() {
 				SampleType:  sampleInfoMap[sampleID]["样品类型"],
 				SampleNum:   sampleID,
 				MedicineCate: DrugMedicineCate{
-					Id:   item["不知道是什么"],
+					Id:   "不知道是什么",
 					Name: item["药物分类"],
 				},
 				Desc: DrugDesc{
@@ -140,7 +141,9 @@ func main() {
 		info[sampleID] = drugs
 	}
 	for sampleID, drugs := range info {
-		for _, drugInfo := range drugs {
+		fmt.Printf("%s\n", sampleID)
+		fmt.Println("----------------------------------------------------------------------------------------")
+		for drugName, drugInfo := range drugs {
 			simpleUtil.HandleError(
 				fmt.Fprintf(
 					outputF,
@@ -150,6 +153,60 @@ func main() {
 					jsonUtil.MarshalString(drugInfo),
 				),
 			)
+			if drugInfo.Desc.ReportDesc.Guidance == "常规用药" {
+				continue
+			}
+			fmt.Printf(
+				"%s\t%s\t%s\t%s\t%s\t%s\n",
+				drugInfo.MedicineCate.Name,
+				drugName,
+				drugInfo.Desc.GenomicsDesc.Mutation[0].Gene,
+				drugInfo.Desc.GenomicsDesc.Mutation[0].Locus[0].SnpRs,
+				drugInfo.Desc.GenomicsDesc.Mutation[0].Locus[0].GeneType,
+				drugInfo.Desc.ReportDesc.Guidance,
+			)
+			for i, mutation := range drugInfo.Desc.GenomicsDesc.Mutation {
+				for j, locus := range mutation.Locus {
+					if i == 0 {
+						if j == 0 {
+							continue
+						} else {
+							fmt.Printf(
+								"%-20s\t%s\t%s\t%s\t%s\t%s\n",
+								"",
+								"",
+								"",
+								locus.SnpRs,
+								locus.GeneType,
+								"",
+							)
+						}
+					} else {
+						if j == 0 {
+							fmt.Printf(
+								"%-20s\t%s\t%s\t%s\t%s\t%s\n",
+								"",
+								"",
+								mutation.Gene,
+								locus.SnpRs,
+								locus.GeneType,
+								"",
+							)
+						} else {
+							fmt.Printf(
+								"%-20s\t%s\t%s\t%s\t%s\t%s\n",
+								"",
+								"",
+								"",
+								locus.SnpRs,
+								locus.GeneType,
+								"",
+							)
+						}
+					}
+				}
+			}
 		}
+		fmt.Println("----------------------------------------------------------------------------------------")
 	}
 }
