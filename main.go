@@ -22,10 +22,10 @@ var (
 		"",
 		"input to be convert",
 	)
-	output = flag.String(
-		"output",
+	prefix = flag.String(
+		"prefix",
 		"",
-		"output json file name, default is -input.txt",
+		"output json file -prefix.sampleID.txt",
 	)
 )
 
@@ -37,11 +37,6 @@ func main() {
 		log.Print("-input is required!")
 		os.Exit(1)
 	}
-	if *output == "" {
-		*output = *input + ".txt"
-	}
-	var outputF = osUtil.Create(*output)
-	defer simpleUtil.DeferClose(outputF)
 
 	var excel = simpleUtil.HandleError(excelize.OpenFile(*input)).(*excelize.File)
 	// 读取样品信息
@@ -141,6 +136,7 @@ func main() {
 		info[sampleID] = drugs
 	}
 	for sampleID, drugs := range info {
+		var outputF = osUtil.Create(*prefix + "." + sampleID + ".txt")
 		fmt.Printf("%s\n", sampleID)
 		fmt.Println("----------------------------------------------------------------------------------------")
 		for drugName, drugInfo := range drugs {
@@ -208,5 +204,6 @@ func main() {
 			}
 		}
 		fmt.Println("----------------------------------------------------------------------------------------")
+		simpleUtil.DeferClose(outputF)
 	}
 }
