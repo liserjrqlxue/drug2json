@@ -46,7 +46,7 @@ var (
 	prefix = flag.String(
 		"prefix",
 		"",
-		"output json file -prefix.sampleID.txt",
+		"output json file -prefix.sampleID.txt, default is -input",
 	)
 	drugList = flag.String(
 		"drugList",
@@ -72,6 +72,9 @@ func main() {
 		flag.Usage()
 		log.Print("-input is required!")
 		os.Exit(1)
+	}
+	if *prefix == "" {
+		*prefix = *input
 	}
 
 	// load drug background database
