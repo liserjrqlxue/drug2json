@@ -198,8 +198,6 @@ func main() {
 	}
 	for sampleID, drugs := range info {
 		var outputF = osUtil.Create(*prefix + "." + sampleID + ".txt")
-		fmt.Printf("%s\n", sampleID)
-		fmt.Println("----------------------------------------------------------------------------------------")
 		for drugName, drugInfo := range drugs {
 			if drugMap[drugName] == "" {
 				continue
@@ -216,58 +214,7 @@ func main() {
 			if drugInfo.Desc.ReportDesc.Guidance == "常规用药" {
 				continue
 			}
-			fmt.Printf(
-				"%s\t%s\t%s\t%s\t%s\t%s\n",
-				drugInfo.MedicineCate.Name,
-				drugName,
-				drugInfo.Desc.GenomicsDesc.Mutation[0].Gene,
-				drugInfo.Desc.GenomicsDesc.Mutation[0].Locus[0].SnpRs,
-				drugInfo.Desc.GenomicsDesc.Mutation[0].Locus[0].GeneType,
-				drugInfo.Desc.ReportDesc.Guidance,
-			)
-			for i, mutation := range drugInfo.Desc.GenomicsDesc.Mutation {
-				for j, locus := range mutation.Locus {
-					if i == 0 {
-						if j == 0 {
-							continue
-						} else {
-							fmt.Printf(
-								"%-20s\t%s\t%s\t%s\t%s\t%s\n",
-								"",
-								"",
-								"",
-								locus.SnpRs,
-								locus.GeneType,
-								"",
-							)
-						}
-					} else {
-						if j == 0 {
-							fmt.Printf(
-								"%-20s\t%s\t%s\t%s\t%s\t%s\n",
-								"",
-								"",
-								mutation.Gene,
-								locus.SnpRs,
-								locus.GeneType,
-								"",
-							)
-						} else {
-							fmt.Printf(
-								"%-20s\t%s\t%s\t%s\t%s\t%s\n",
-								"",
-								"",
-								"",
-								locus.SnpRs,
-								locus.GeneType,
-								"",
-							)
-						}
-					}
-				}
-			}
 		}
-		fmt.Println("----------------------------------------------------------------------------------------")
 		simpleUtil.DeferClose(outputF)
 	}
 }
