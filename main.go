@@ -55,12 +55,12 @@ var (
 	)
 	bgFile = flag.String(
 		"background",
-		filepath.Join(etcPath, "background-child-V1.1-xcj20181206.xlsx"),
+		filepath.Join(etcPath, "青岛新生儿WGS项目-药物背景数据库V16_20200708.xlsx"),
 		"background database",
 	)
 	bgSheetName = flag.String(
 		"backgroundSheet",
-		"Sheet2",
+		"药物背景知识库+阳性结果参考来源",
 		"background database sheet name",
 	)
 )
@@ -275,7 +275,7 @@ func main() {
 func str2DrugReferencesArray(str string) []DrugReferences {
 	var references = []DrugReferences{}
 	var i = 1
-	for _, ref := range strings.Split(str, "\n") {
+	for _, ref := range strings.Split(str, "_x000D_\n") {
 		if ref != "" {
 			var reference = DrugReferences{
 				Id:    strconv.Itoa(i),
