@@ -13,6 +13,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/version"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
@@ -20,8 +21,9 @@ import (
 
 // os
 var (
-	ex, _  = os.Executable()
-	exPath = filepath.Dir(ex)
+	ex, _   = os.Executable()
+	exPath  = filepath.Dir(ex)
+	etcPath = filepath.Join(exPath, "etc")
 )
 
 // flag
@@ -31,6 +33,16 @@ var (
 		"",
 		"input to be convert",
 	)
+	nameHash = flag.String(
+		"nameHash",
+		"",
+		"use name.hash to load sample info",
+	)
+	nameHashTitle = flag.String(
+		"nameHashTitle",
+		filepath.Join(etcPath, "name.hash.title.txt"),
+		"title of name.hash",
+	)
 	prefix = flag.String(
 		"prefix",
 		"",
@@ -38,7 +50,7 @@ var (
 	)
 	bgFile = flag.String(
 		"background",
-		filepath.Join(exPath, "background-child-V1.1-xcj20181206.xlsx"),
+		filepath.Join(etcPath, "background-child-V1.1-xcj20181206.xlsx"),
 		"background database",
 	)
 	bgSheetName = flag.String(
@@ -67,10 +79,26 @@ func main() {
 		"药物中文名称",
 	)
 
+	var sampleInfoMap = make(map[string]map[string]string)
+
 	var excel = simpleUtil.HandleError(excelize.OpenFile(*input)).(*excelize.File)
 	// 读取样品信息
-	var sampleInfo = simpleUtil.HandleError(excel.GetRows("样本信息")).([][]string)
-	var sampleInfoMap = simpleUtil.Slice2MapMapArray(sampleInfo, "样品编号")
+	if *nameHash == "" {
+		sampleInfoMap = simpleUtil.Slice2MapMapArray(
+			simpleUtil.HandleError(excel.GetRows("样本信息")).([][]string),
+			"样品编号",
+		)
+	} else {
+		var title = textUtil.File2Array(*nameHashTitle)
+		var data = textUtil.File2Slice(*nameHash, "\t")
+		for i := range data {
+			var item = make(map[string]string)
+			for j := range title {
+				item[title[j]] = data[i][j]
+			}
+			sampleInfoMap[item["样品编号"]] = item
+		}
+	}
 	// 读取药物结果
 	var results = simpleUtil.HandleError(excel.GetRows("检测结果")).([][]string)
 	var db = simpleUtil.Slice2MapArray(results)
@@ -232,7 +260,8 @@ func main() {
 	}
 }
 
-func str2DrugReferencesArray(str string) (references []DrugReferences) {
+func str2DrugReferencesArray(str string) []DrugReferences {
+	var references = []DrugReferences{}
 	var i = 1
 	for _, ref := range strings.Split(str, "\n") {
 		if ref != "" {
@@ -244,5 +273,5 @@ func str2DrugReferencesArray(str string) (references []DrugReferences) {
 			references = append(references, reference)
 		}
 	}
-	return
+	return references
 }
