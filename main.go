@@ -48,6 +48,11 @@ var (
 		"",
 		"output json file -prefix.sampleID.txt",
 	)
+	drugList = flag.String(
+		"drugList",
+		filepath.Join(etcPath, "drug.list.txt"),
+		"drug list to output",
+	)
 	bgFile = flag.String(
 		"background",
 		filepath.Join(etcPath, "background-child-V1.1-xcj20181206.xlsx"),
@@ -69,6 +74,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// load drug background database
 	var backgroundDb = simpleUtil.Slice2MapMapArray(
 		simpleUtil.HandleError(
 			simpleUtil.HandleError(
@@ -78,6 +84,9 @@ func main() {
 		).([][]string),
 		"药物中文名称",
 	)
+
+	// load drug list
+	var drugMap = simpleUtil.HandleError(textUtil.File2Map(*drugList, "\t", true)).(map[string]string)
 
 	var sampleInfoMap = make(map[string]map[string]string)
 
@@ -192,6 +201,9 @@ func main() {
 		fmt.Printf("%s\n", sampleID)
 		fmt.Println("----------------------------------------------------------------------------------------")
 		for drugName, drugInfo := range drugs {
+			if drugMap[drugName] == "" {
+				continue
+			}
 			simpleUtil.HandleError(
 				fmt.Fprintf(
 					outputF,
