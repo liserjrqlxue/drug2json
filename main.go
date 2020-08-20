@@ -211,9 +211,6 @@ func main() {
 					jsonUtil.MarshalString(drugInfo),
 				),
 			)
-			if drugInfo.Desc.ReportDesc.Guidance == "常规用药" {
-				continue
-			}
 		}
 		simpleUtil.DeferClose(outputF)
 	}
